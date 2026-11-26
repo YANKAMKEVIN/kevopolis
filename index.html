@@ -51,6 +51,10 @@ canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-actio
 .ov{position:fixed;inset:0;display:grid;place-items:center;padding:20px;background:rgba(11,16,41,.35);transition:opacity .6s;z-index:5}
 .ov.hide{opacity:0;pointer-events:none}
 .panel{background:rgba(255,253,248,.95);border-radius:26px;padding:28px 28px 24px;max-width:440px;width:100%;box-shadow:0 30px 80px rgba(5,8,30,.4)}
+/* petits écrans : le panneau défile et les boutons restent visibles en bas */
+.ov .panel{max-height:100%;overflow-y:auto;overscroll-behavior:contain}
+.ov .panel .btns{position:sticky;bottom:-24px;margin-bottom:-24px;padding:12px 0 24px;background:linear-gradient(rgba(255,253,248,0),rgba(255,253,248,.97) 30%)}
+@media (max-height:700px){.panel h2{font-size:36px}}
 .panel h2{font-size:44px;line-height:1.02;margin:0 0 6px;letter-spacing:-.035em;font-weight:700}
 .panel p{margin:8px 0;font-size:16px}
 .panel .lead{font-size:18px;opacity:.8;margin-bottom:14px}
@@ -249,8 +253,10 @@ function resize(){
 }
 function fit(){
   if(!G||!W)return;
-  const top=W<700?168:100, bot=W<700?236:176;
-  const availH=Math.max(120,H-top-bot), availW=W*.94;
+  // téléphone couché : les vœux et l'horloge sont sur les côtés, l'île peut monter tout en haut
+  const land=W>H*1.3&&H<560;
+  const top=land?18:W<700?168:100, bot=W<700?236:land?150:176;
+  const availH=Math.max(120,H-top-bot), availW=land?W*.46:W*.94;
   let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
   G.cells.forEach((c,i)=>{if(!c.land)return;const x=i%N,y=(i/N)|0,sx=(x-y)*.5,sy=(x+y)*.25+.25;x0=Math.min(x0,sx-.5);x1=Math.max(x1,sx+.5);y0=Math.min(y0,sy-.9);y1=Math.max(y1,sy+.6)});
   TW=Math.min(availW/(x1-x0),availH/(y1-y0),140);TH=TW/2;
@@ -382,7 +388,7 @@ const fx=[];let puffs=[];
 function floatText(i,txt,col){const[x,y]=cellXY(i);fx.push({i,txt,col,t0:performance.now()})}
 
 // ---------- boucle de rendu ----------
-let hover=-1,dispHour=START,last=performance.now();
+let hover=-1,dispHour=START,last=performance.now(),haloC=null,haloKey='';
 function frame(now){
   const dt=Math.min(.05,(now-last)/1000);last=now;const t=now/1000;
   dispHour+=(hour-dispHour)*Math.min(1,dt*2.2);
@@ -399,9 +405,14 @@ function frame(now){
   LIGHTS=[];
   // halo d'eau peu profonde autour de l'île
   const order=[...Array(N*N).keys()].sort((a,b)=>((a%N)+((a/N)|0))-((b%N)+((b/N)|0))||(a%N)-(b%N));
-  ctx.save();ctx.filter='blur('+Math.round(TW*.25)+'px)';ctx.fillStyle='rgba(255,255,255,.22)';
-  for(const i of order){if(!G.cells[i].land)continue;const[x,y]=cellXY(i);const hw=TW/2*1.25,hh=TH/2*1.25;poly([[x,y-hh+TH*.4],[x+hw,y+TH*.4],[x,y+hh+TH*.4],[x-hw,y+TH*.4]],'rgba(255,255,255,.22)')}
-  ctx.restore();
+  // le halo flouté ne change qu'avec l'île ou la taille de l'écran : on le calcule une fois puis on le recopie
+  // (avant : un filtre blur par case et par image, 2 images/s sur un téléphone sans GPU rapide)
+  const hk=[G.seedStr,W,H,DPR,TW,OX,OY].join();
+  if(haloKey!==hk){haloKey=hk;haloC=haloC||document.createElement('canvas');haloC.width=W*DPR;haloC.height=H*DPR;
+    const raw=document.createElement('canvas');raw.width=haloC.width;raw.height=haloC.height;
+    swap(raw.getContext('2d'),()=>{ctx.setTransform(DPR,0,0,DPR,0,0);for(const i of order){if(!G.cells[i].land)continue;const[x,y]=cellXY(i);const hw=TW/2*1.25,hh=TH/2*1.25;poly([[x,y-hh+TH*.4],[x+hw,y+TH*.4],[x,y+hh+TH*.4],[x-hw,y+TH*.4]],'rgba(255,255,255,.22)')}});
+    const hc=haloC.getContext('2d');hc.clearRect(0,0,haloC.width,haloC.height);hc.filter='blur('+Math.round(TW*.25*DPR)+'px)';hc.drawImage(raw,0,0);hc.filter='none'}
+  ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(haloC,0,0);ctx.restore();
   // aperçu
   let prev=null;
   if(!over&&hover>=0&&G.cells[hover].land&&!G.cells[hover].type&&hand[sel]){
@@ -575,6 +586,9 @@ $('undo').onclick=undo;
 $('snd').onclick=()=>{muted=!muted;$('snd').style.opacity=muted?.4:1;try{localStorage.setItem('kevo-mute',muted?'1':'0')}catch(e){};if(!muted)note(12)};
 $('help').onclick=()=>{$('intro').classList.remove('hide');$('playDaily').textContent=G?'Reprendre':'Jouer l\'île du jour';mode='help'};
 addEventListener('keydown',e=>{
+  // Ctrl+R (recharger), Cmd+Z… : ne pas déclencher les raccourcis du jeu, sauf annuler
+  if(e.ctrlKey||e.metaKey||e.altKey){if(e.key==='z'||e.key==='Z')undo();return}
+  if(!G||!$('intro').classList.contains('hide'))return;
   if(['1','2','3'].includes(e.key)&&hand&&hand[+e.key-1]){sel=+e.key-1;renderHand()}
   else if(e.key==='r'||e.key==='R')reroll();
   else if(e.key==='z'||e.key==='Z'||(e.key==='z'&&(e.metaKey||e.ctrlKey)))undo();
@@ -595,7 +609,7 @@ resize();
 newGame('jour-'+dayKey,'Île du '+fmtDay);
 requestAnimationFrame(()=>{document.querySelectorAll('#rules canvas').forEach(c=>icon(c,c.dataset.t));renderHand()});
 requestAnimationFrame(frame);
-window.__kevo={get G(){return G},score,total,fullScore,goalsDone,place,get hand(){return hand},set sel(v){sel=v},get hour(){return hour},makeIsland,GOALS};
+window.__kevo={get G(){return G},get geo(){return {OX,OY,TW,TH}},score,total,fullScore,goalsDone,place,get hand(){return hand},set sel(v){sel=v},get hour(){return hour},makeIsland,GOALS};
 }
 </script>
 </body>
