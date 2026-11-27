@@ -1,0 +1,79 @@
+
+/* VOICE: calme, contemplatif, une petite ville qui s'allume au fil d'une journée
+   IDEA: une maquette d'urbaniste posée sur la mer, vue de haut, du lever au coucher
+   PICTURE: l'île isométrique plein écran ; la lumière du jour change à chaque heure jouée
+   COLOUR: la mer qui passe de pêche à turquoise puis à nuit d'encre ; toits corail, boutiques moutarde, ateliers ardoise
+   TYPE: Outfit partout, chiffres de l'horloge en grand ; LAYOUT: HUD en haut, plateau au centre, main de cartes en bas */
+:root{--ink:#1d2433;--paper:rgba(255,253,248,.86);--line:rgba(29,36,51,.12);--coral:#e2725b;--accent:#ff8a5c}
+*{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:#0b1029}
+body{font:16px/1.4 Outfit,system-ui,sans-serif;color:var(--ink);user-select:none;-webkit-user-select:none}
+canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.hud{position:fixed;left:0;right:0;top:0;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:14px max(16px,3vw);pointer-events:none}
+.hud>*{pointer-events:auto}
+.brand{background:var(--paper);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:18px;padding:10px 14px 12px;max-width:330px;box-shadow:0 10px 30px rgba(10,15,40,.12)}
+.brand h1{margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.05}
+.brand .sub{font-size:13px;opacity:.65;margin-top:2px}
+.goals{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:4px}
+.goals li{font-size:13px;display:flex;gap:8px;align-items:center;line-height:1.25}
+.goals li i{flex:none;width:16px;height:16px;border-radius:50%;border:1.5px solid rgba(29,36,51,.35);display:grid;place-items:center;font-style:normal;font-size:11px;color:#fff;transition:.3s}
+.goals li.ok i{background:#3aa76d;border-color:#3aa76d}
+.goals li.ok span{opacity:.55;text-decoration:line-through}
+.clock{background:var(--paper);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:18px;padding:8px 14px 10px;text-align:right;box-shadow:0 10px 30px rgba(10,15,40,.12)}
+.clock .t{font-size:34px;font-weight:600;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.clock .s{font-size:13px;opacity:.7;margin-top:4px;white-space:nowrap}
+.clock .s b{font-size:17px;opacity:1;color:var(--ink)}
+.tools{display:flex;gap:6px;justify-content:flex-end;margin-top:8px}
+.ib{appearance:none;border:0;background:rgba(29,36,51,.08);color:var(--ink);border-radius:12px;height:36px;min-width:36px;padding:0 10px;font:500 13px Outfit,sans-serif;cursor:pointer}
+.tools .ib{background:var(--paper);box-shadow:0 6px 18px rgba(10,15,40,.12)}
+.ib:hover{background:rgba(29,36,51,.15)}.ib:disabled{opacity:.35;cursor:default}
+.ib:focus-visible,.card:focus-visible,.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.hand{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;align-items:flex-end;gap:10px;padding:10px max(12px,3vw) max(14px,env(safe-area-inset-bottom));pointer-events:none}
+.hand>*{pointer-events:auto}
+.card{appearance:none;border:0;font:inherit;color:inherit;text-align:left;cursor:pointer;width:178px;background:var(--paper);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:18px;padding:8px 12px 12px;box-shadow:0 10px 30px rgba(10,15,40,.14);transition:transform .25s cubic-bezier(.3,1.4,.5,1),box-shadow .25s;display:flex;flex-direction:column;gap:2px}
+.card canvas{width:64px;height:56px;align-self:center}
+.card b{font-size:16px;font-weight:600}
+.card small{font-size:13px;line-height:1.3;opacity:.72}
+.card.sel{transform:translateY(-10px);box-shadow:0 0 0 3px var(--ink),0 18px 40px rgba(10,15,40,.25)}
+.card.empty{visibility:hidden}
+.side{display:flex;flex-direction:column;gap:6px;align-items:stretch;width:118px}
+.side .ib{height:44px;background:var(--paper);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 10px 30px rgba(10,15,40,.12);line-height:1.1}
+.side .ib small{display:block;font-size:12px;opacity:.6}
+.side .left{font-size:13px;text-align:center;color:#fff;opacity:.85;text-shadow:0 1px 4px rgba(0,0,0,.4)}
+.ov{position:fixed;inset:0;display:grid;place-items:center;padding:20px;background:rgba(11,16,41,.35);transition:opacity .6s;z-index:5}
+.ov.hide{opacity:0;pointer-events:none}
+.panel{background:rgba(255,253,248,.95);border-radius:26px;padding:28px 28px 24px;max-width:440px;width:100%;box-shadow:0 30px 80px rgba(5,8,30,.4)}
+/* petits écrans : le panneau défile et les boutons restent visibles en bas */
+.ov .panel{max-height:100%;overflow-y:auto;overscroll-behavior:contain}
+.ov .panel .btns{position:sticky;bottom:-24px;margin-bottom:-24px;padding:12px 0 24px;background:linear-gradient(rgba(255,253,248,0),rgba(255,253,248,.97) 30%)}
+@media (max-height:700px){.panel h2{font-size:36px}}
+.panel h2{font-size:44px;line-height:1.02;margin:0 0 6px;letter-spacing:-.035em;font-weight:700}
+.panel p{margin:8px 0;font-size:16px}
+.panel .lead{font-size:18px;opacity:.8;margin-bottom:14px}
+.rules{display:grid;grid-template-columns:44px 1fr;gap:6px 10px;align-items:center;margin:14px 0;font-size:14px}
+.rules canvas{width:44px;height:38px}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.btn{appearance:none;border:0;border-radius:14px;height:48px;padding:0 20px;font:600 16px Outfit,sans-serif;cursor:pointer;background:var(--ink);color:#fff;flex:1 1 auto}
+.btn.alt{background:rgba(29,36,51,.08);color:var(--ink)}
+.big{font-size:72px;font-weight:700;letter-spacing:-.05em;line-height:1;margin:10px 0 2px;font-variant-numeric:tabular-nums}
+.stars{font-size:30px;letter-spacing:4px;color:#f2b33d}
+.stars .off{color:rgba(29,36,51,.15)}
+.muted{opacity:.6;font-size:14px}
+.toast{position:fixed;left:50%;bottom:200px;max-width:90vw;text-align:center;transform:translate(-50%,-20px);background:#3aa76d;color:#fff;padding:10px 16px;border-radius:14px;font-weight:600;opacity:0;transition:.4s;pointer-events:none;z-index:4;}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media(max-width:700px){
+ .toast{bottom:250px;font-size:14px}
+ .hud{padding:10px 10px}
+ .brand{padding:8px 10px 10px;max-width:58vw}.brand h1{font-size:18px}
+ .goals li{font-size:12.5px}
+ .clock{padding:6px 10px 8px}.clock .t{font-size:26px}
+ .hand{gap:6px;padding:8px 8px max(10px,env(safe-area-inset-bottom));flex-wrap:wrap}
+ .card{width:calc((100vw - 28px)/3);padding:6px 8px 8px;border-radius:14px}
+ .card canvas{width:52px;height:44px}
+ .card b{font-size:14px}.card small{font-size:12px}
+ .side{order:-1;width:100%;flex-direction:row;justify-content:center}
+ .side .ib{height:38px;flex:0 1 150px}
+ .side .left{align-self:center}
+ .panel h2{font-size:36px}.big{font-size:60px}
+}
+@media(prefers-reduced-motion:reduce){.card,.toast,.ov{transition:none}}

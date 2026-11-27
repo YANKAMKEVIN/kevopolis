@@ -36,14 +36,45 @@ Seules les cases qui se touchent par un côté sont voisines. Les bois déjà pr
 
 ## Lancer le jeu
 
-Tout tient dans un seul fichier : ouvre `index.html` dans un navigateur.
+En ligne : https://yankamkevin.github.io/kevopolis/ (une fois GitHub Pages activé).
+
+En local, le jeu est en modules ES : il faut un petit serveur (un double-clic sur `index.html` ne suffit plus).
+
+```bash
+npm start          # puis ouvrir http://localhost:8000
+```
+
+## Technique
+
+Version 1.1.0 (affichée sur l'accueil). Pas d'étape de compilation : le navigateur charge `src/main.js`.
+
+| Fichier | Rôle |
+|---|---|
+| `src/rules.js` | Règles : bâtiments, sac, vœux, score de chaque case, génération de l'île à partir d'une graine. Sans DOM. |
+| `src/game.js` | Déroulé d'une partie : poser, nouvelle main, annuler, minuit. Sans DOM. |
+| `src/save.js` | Sauvegarde versionnée. |
+| `src/state.js` | État partagé. |
+| `src/render.js`, `src/input.js`, `src/ui.js`, `src/audio.js` | Rendu isométrique, souris/doigt/clavier, interface, sons. |
+
+Les types sont vérifiés par TypeScript sur le JavaScript (`// @ts-check` + JSDoc, `npm run types`).
+
+## Sauvegarde
+
+Clé `kevopolis.sauvegarde` dans le navigateur : `{ version, muted, best: { île: habitants } }` (400 îles au plus).
+Tout changement de format incrémente `SAVE_VERSION` et ajoute une étape à `migrate()`.
+Une sauvegarde abîmée ou d'une version plus récente est mise de côté sous `kevopolis.sauvegarde.abimee`, jamais écrasée.
+L'ancien format (`kevo-mute` et `kevo-best-<île>`) est repris automatiquement une fois, puis effacé.
 
 ## Tests
-Un test de fumée joue le jeu tout seul sur ordinateur, iPhone SE et Pixel 7 couché (Chromium) : il échoue sur toute erreur console, un bouton hors de l'écran impossible à atteindre, une page qui déborde ou une chute d'images/s.
 
 ```bash
 npm install
 npx playwright install chromium
-npm test            # captures dans test-results/
+npm test            # types + unitaires + fumée + partie complète ; captures dans test-results/
 ```
-Réglages propres au jeu : `tests/smoke.config.mjs`. La CI GitHub (`.github/workflows/tests.yml`) le lance sur chaque PR.
+
+- `npm run unit` : score de chaque bâtiment, les 8 vœux, génération de l'île (taille, d'un seul tenant, même graine = même île), poser, nouvelle main, annuler, minuit, 20 parties simulées, sauvegarde (abîmée, trop récente, stockage bloqué, ancien format, records).
+- `npm run smoke` : le jeu joue tout seul sur ordinateur, iPhone SE et Pixel 7 couché ; échoue sur toute erreur console, un bouton hors écran, une page qui déborde ou une chute d'images/s.
+- `npm run partie` : l'île du jour jouée jusqu'à minuit en vrais clics, écran de fin, record et son retrouvés après rechargement, ancien format, sauvegarde abîmée ; puis une partie au doigt sur iPhone SE.
+
+La CI GitHub (`.github/workflows/tests.yml`) lance tout sur chaque PR et bloque en cas d'échec. GitHub Pages publie directement la branche `main` (fichier `.nojekyll`).
