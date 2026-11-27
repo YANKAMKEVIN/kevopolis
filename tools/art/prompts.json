@@ -1,0 +1,14 @@
+{
+  "style": "Illustration douce et épurée de jeu de construction cosy, façon diorama miniature peint à la main : petite île, formes simples et arrondies, couleurs pastel chaudes (crème, terracotta, vert sauge, bleu lagon), lumière tendre, beaucoup d'air autour du sujet. Aucun texte, aucun logo, aucune lettre, aucune signature, aucun filigrane.",
+  "fond_detourage": "Sujet seul, centré, entier, en vue isométrique, posé sur sa petite tuile de sol carrée en losange, sur un fond uni magenta pur #FF00FF sans dégradé ni ombre portée sur le fond, pour être détouré ensuite.",
+  "images": [
+    {"fichier": "titre", "taille": "1920x1080", "detourer": false,
+     "prompt": "Affiche d'ouverture de « Kevopolis » : une petite île ronde au milieu d'un lagon, vue en isométrique, avec un village miniature (maisons aux toits terracotta, un parc, une boutique à auvent, un atelier à cheminée, une place pavée, un phare blanc et rouge au bord de l'eau). L'heure est le coucher de soleil, les premières fenêtres s'allument, le ciel passe du pêche au bleu nuit. Garder le tiers haut central calme pour poser le titre."},
+    {"fichier": "carte_maison", "taille": "512x512", "detourer": true, "prompt": "Une petite maison cosy en isométrique : murs crème, toit terracotta, porte ronde, une fenêtre éclairée, un pot de fleurs."},
+    {"fichier": "carte_parc", "taille": "512x512", "detourer": true, "prompt": "Un petit parc en isométrique : pelouse vert sauge, deux arbres ronds, un banc, un petit bassin."},
+    {"fichier": "carte_boutique", "taille": "512x512", "detourer": true, "prompt": "Une petite boutique en isométrique : façade jaune pâle, auvent rayé, vitrine avec quelques fruits, une lanterne."},
+    {"fichier": "carte_atelier", "taille": "512x512", "detourer": true, "prompt": "Un petit atelier en isométrique : bâtiment en brique grise et bois, toit en dents de scie, cheminée qui fume, caisses devant."},
+    {"fichier": "carte_place", "taille": "512x512", "detourer": true, "prompt": "Une petite place pavée en isométrique : fontaine ronde au centre, deux lampadaires, quelques pavés clairs."},
+    {"fichier": "carte_phare", "taille": "512x512", "detourer": true, "prompt": "Un petit phare en isométrique : tour blanche à bandes rouges, lanterne qui brille, sur un rocher au bord de l'eau avec une petite vague."}
+  ]
+}

@@ -2,6 +2,7 @@
 /** Rendu canvas en 3D isométrique : ciel selon l'heure, île, bâtiments, lumières, textes flottants. */
 import { N, clamp, rng, score } from './rules.js';
 import { etat } from './state.js';
+import { art } from './art.js';
 
 // ---------- canvas ----------
 /** @type {HTMLCanvasElement} */
@@ -225,6 +226,9 @@ function easeBack(x){const c1=1.7,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.po
 export function icon(canvas,type){
   const r=canvas.getBoundingClientRect();const w=r.width||64,h=r.height||56,d=2;
   canvas.width=w*d;canvas.height=h*d;const c2=canvas.getContext('2d');
+  // carte peinte si elle est prête, sinon le bâtiment dessiné par le même moteur que l'île
+  const img=art('carte_'+type);
+  if(img){c2.setTransform(d,0,0,d,0,0);c2.clearRect(0,0,w,h);const z=Math.min(w,h)*1.08;c2.drawImage(img,(w-z)/2,(h-z)/2+h*.04,z,z);return}
   // dessiner avec le même moteur
   swap(c2,()=>{c2.setTransform(d,0,0,d,0,0);c2.clearRect(0,0,w,h);const s=w*.36,x=w/2,y=h*.68;
     poly([[x,y-s/2],[x+s,y],[x,y+s/2],[x-s,y]],tileTop(type));
