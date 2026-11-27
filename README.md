@@ -54,9 +54,17 @@ Version 1.1.0 (affichée sur l'accueil). Pas d'étape de compilation : le naviga
 | `src/game.js` | Déroulé d'une partie : poser, nouvelle main, annuler, minuit. Sans DOM. |
 | `src/save.js` | Sauvegarde versionnée. |
 | `src/state.js` | État partagé. |
+| `src/art.js` | Visuels peints (dossier `art/`), chargés au démarrage. |
 | `src/render.js`, `src/input.js`, `src/ui.js`, `src/audio.js` | Rendu isométrique, souris/doigt/clavier, interface, sons. |
 
 Les types sont vérifiés par TypeScript sur le JavaScript (`// @ts-check` + JSDoc, `npm run types`).
+
+## Visuels
+
+Les 7 visuels du dossier `art/` ont été peints avec Codex (prompts dans `tools/art/prompts.json`) :
+le tableau de l'île sous l'accueil et les 6 cartes de bâtiments (main et règles). Les bâtiments
+posés sur l'île restent dessinés en isométrique, pour garder leurs fenêtres qui s'allument la nuit.
+Si une image manque, le jeu retombe sur le dessin d'origine.
 
 ## Sauvegarde
 

@@ -52,7 +52,7 @@ $('snd').style.opacity=save.muted?.4:1;
 $('reroll').onclick=()=>{ac();reroll()};
 $('undo').onclick=undo;
 $('snd').onclick=()=>{save.muted=!save.muted;$('snd').style.opacity=save.muted?.4:1;persist();if(!save.muted)note(12)};
-$('help').onclick=()=>{$('intro').classList.remove('hide');$('playDaily').textContent=etat.G?'Reprendre':'Jouer l\'île du jour';etat.mode='help'};
+$('help').onclick=()=>{$('intro').classList.remove('hide','titre');$('playDaily').textContent=etat.G?'Reprendre':'Jouer l\'île du jour';etat.mode='help'};
 export const fmtDay=new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'long'}).format(today);
 function startDaily(){newGame('jour-'+dayKey,'Île du '+fmtDay);$('intro').classList.add('hide');$('end').classList.add('hide')}
 function startRandom(){const s=randomName();newGame('ile-'+s,'Île « '+s.toUpperCase()+' »');$('intro').classList.add('hide');$('end').classList.add('hide')}

@@ -53,6 +53,9 @@ try {
 
   await page.goto(URL);
   check(/^v\d+\.\d+\.\d+$/.test(await page.locator('#ver').innerText()), 'numéro de version sur l\'accueil');
+  await page.waitForFunction(() => __kevo.art !== undefined, null, { timeout: 10000 });
+  check(await page.evaluate(() => __kevo.art) === 7, 'les 7 visuels peints sont chargés (titre, 6 cartes)');
+  check((await page.locator('#intro').evaluate(e => getComputedStyle(e).backgroundImage)).includes('titre.webp'), 'tableau peint sous l\'accueil');
   await page.click('#playDaily');
   const seed = await page.evaluate(() => __kevo.G.seedStr);
   check(/^jour-\d{4}-\d{2}-\d{2}$/.test(seed), `île du jour (${seed})`);
