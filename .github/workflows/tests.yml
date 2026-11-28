@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   unit:
-    name: Types et tests unitaires (score, île, vœux, parties simulées, sauvegarde)
+    name: Types stricts et tests unitaires (score, vœux, formes, archipel, île du jour, sauvegarde)
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -23,12 +23,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install --no-audit --no-fund
+      - run: npm ci --no-audit --no-fund
       - run: npm run types
       - run: npm run unit
 
   navigateur:
-    name: Fumée (ordinateur, iPhone SE, Pixel 7) et partie complète
+    name: Fumée (ordinateur, iPhone SE, Pixel 7) et parties complètes (jour, archipel)
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -36,7 +36,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install --no-audit --no-fund
+      - run: npm ci --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
       - run: npm run smoke
       - run: npm run partie
