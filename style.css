@@ -44,7 +44,7 @@ canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-actio
 .ov.hide{opacity:0;pointer-events:none}
 /* premier accueil : le tableau peint de l'île */
 #intro.titre{background:linear-gradient(rgba(11,16,41,.15),rgba(11,16,41,.45)),url(art/titre.webp) center/cover no-repeat}
-.panel{background:rgba(255,253,248,.95);border-radius:26px;padding:28px 28px 24px;max-width:440px;width:100%;box-shadow:0 30px 80px rgba(5,8,30,.4)}
+.panel{background:rgba(255,253,248,.985);border-radius:26px;padding:28px 28px 24px;max-width:440px;width:100%;box-shadow:0 30px 80px rgba(5,8,30,.4)}
 /* petits écrans : le panneau défile et les boutons restent visibles en bas */
 .ov .panel{max-height:100%;overflow-y:auto;overscroll-behavior:contain}
 .ov .panel .btns{position:sticky;bottom:-24px;margin-bottom:-24px;padding:12px 0 24px;background:linear-gradient(rgba(255,253,248,0),rgba(255,253,248,.97) 30%)}
@@ -78,4 +78,50 @@ canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-actio
  .side .left{align-self:center}
  .panel h2{font-size:36px}.big{font-size:60px}
 }
-@media(prefers-reduced-motion:reduce){.card,.toast,.ov{transition:none}}
+/* accueil : l'île du jour */
+.daily{font-size:14px;margin:4px 0 0;color:#8a4a2f;font-weight:500}
+.btn.hide,.week.hide{display:none}
+/* archipel */
+.panel.wide{max-width:640px}
+.isles{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px;margin:14px 0 4px}
+.isle{appearance:none;border:0;font:inherit;color:inherit;cursor:pointer;background:rgba(29,36,51,.05);border-radius:16px;padding:8px 8px 10px;display:flex;flex-direction:column;align-items:center;gap:1px;text-align:center;transition:transform .2s,background .2s}
+.isle:hover:not(:disabled){background:rgba(226,114,91,.12);transform:translateY(-2px)}
+.isle canvas{width:96px;height:64px}
+.isle b{font-size:14px;font-weight:600;line-height:1.15}
+.isle .st{font-size:15px;letter-spacing:2px;color:#f2b33d}.isle .st .off{color:rgba(29,36,51,.15)}
+.isle i{font-style:normal}
+.isle small{font-size:12px;opacity:.65;line-height:1.25}
+.isle.locked{cursor:default;opacity:.55}
+.isle:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+/* écran de fin */
+.bar{position:relative;height:10px;border-radius:5px;background:rgba(29,36,51,.08);margin:8px 0 22px}
+.bar>i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:linear-gradient(90deg,#f6c1a6,#f2b33d);transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+.bar span{position:absolute;top:12px;transform:translateX(-50%);font-size:11px;opacity:.5;font-variant-numeric:tabular-nums}
+.bar span::before{content:'';position:absolute;left:50%;top:-14px;width:2px;height:10px;margin-left:-1px;background:rgba(29,36,51,.25)}
+.bar span.on{opacity:.9;color:#b9821c;font-weight:600}
+.next{margin:0 0 6px}
+.break{list-style:none;margin:10px 0;padding:0;display:grid;grid-template-columns:repeat(2,1fr);gap:4px 14px}
+.break li{display:flex;align-items:center;gap:6px;font-size:14px}
+.break canvas{width:30px;height:26px;flex:none}
+.break span{flex:1}
+.break b{font-variant-numeric:tabular-nums;color:#3aa76d}.break b.neg{color:#d9534f}
+.goals.wishes{margin:8px 0}.goals.wishes li{font-size:14px}.goals.wishes li span{flex:1}
+.goals.wishes li b{color:#3aa76d;font-size:13px}
+.goals.wishes li.ok span{text-decoration:none;opacity:1}
+.week{display:flex;gap:6px;margin:10px 0 2px}
+.week span{flex:1;text-align:center;background:rgba(242,179,61,.18);border-radius:10px;padding:4px 0 5px;font-weight:600;font-size:14px;font-variant-numeric:tabular-nums;line-height:1.1}
+.week span small{display:block;font-size:11px;font-weight:400;opacity:.6;text-transform:uppercase}
+.week span.off{background:rgba(29,36,51,.05);opacity:.5}
+.week span.now{box-shadow:inset 0 0 0 2px #f2b33d}
+@media(max-width:700px){
+ .isles{grid-template-columns:repeat(2,1fr)}.isle canvas{width:84px;height:56px}
+ .ov{padding:12px}
+ .panel .lead{font-size:15px}
+ .ov .panel{padding:20px 18px 24px}
+ #end h2{font-size:28px}#end .big{font-size:52px;margin-top:4px}
+ .ov .panel .btns{gap:8px;margin-top:10px;padding-top:8px}
+ .ov .panel .btns .btn{height:42px;font-size:14px;padding:0 10px;flex:1 1 40%}
+ .break{gap:2px 10px}.break li{font-size:13px}
+}
+#archi{background:linear-gradient(rgba(11,16,41,.15),rgba(11,16,41,.45)),url(art/titre.webp) center/cover no-repeat}
+@media(prefers-reduced-motion:reduce){.card,.toast,.ov,.isle,.bar>i{transition:none}}

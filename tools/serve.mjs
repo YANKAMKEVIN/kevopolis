@@ -16,4 +16,4 @@ createServer(async (req, res) => {
     const body = await readFile(file);
     res.writeHead(200, { 'content-type': TYPES[extname(file)] || 'application/octet-stream' }).end(body);
   } catch { res.writeHead(404).end('introuvable'); }
-}).listen(PORT, () => console.log(`KEVDRIFT : http://localhost:${PORT}`));
+}).listen(PORT, () => console.log(`Kevopolis : http://localhost:${PORT}`));

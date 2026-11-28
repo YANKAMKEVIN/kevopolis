@@ -5,6 +5,9 @@ import { N, total, fullScore } from '../../src/rules.js';
 
 export { etat, hooks };
 
+/** Partie au hasard sur une graine donnée (forme d'origine). */
+export const spec = (seed, mode = 'hasard') => ({ seed, label: 'test', mode });
+
 /** localStorage en mémoire (avec key/length, comme le vrai). */
 export function memStore(init = {}) {
   const m = new Map(Object.entries(init));
@@ -23,14 +26,14 @@ export function island(rows, goals = []) {
     const ch = (rows[y] || '')[x] || '.';
     cells.push({ land: ch !== '.', type: map[ch] || null, born: 0 });
   }
-  return { cells, seedStr: 'test', bag: [], goals };
+  return { cells, seedStr: 'test', bag: [], goals, shape: 'ronde', stars: [40, 54, 66] };
 }
 /** Index d'une case. */
 export const at = (x, y) => y * N + x;
 
 /** Partie complète jouée par un joueur glouton : à chaque heure, la carte et la case qui rapportent le plus. */
-export function greedyGame(seedStr) {
-  newGame(seedStr, 'test');
+export function greedyGame(spec) {
+  newGame(typeof spec === 'string' ? { seed: spec, label: 'test', mode: 'hasard' } : spec);
   let coups = 0;
   while (!etat.over && coups < 100) {
     let best = null;

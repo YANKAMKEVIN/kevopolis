@@ -1,7 +1,8 @@
 // Partie complète dans un vrai navigateur (Chromium), jouée en vrais clics comme un joueur :
 // accueil -> île du jour -> 18 bâtiments posés (choix de la carte puis clic sur la case), une nouvelle main,
-// un coup annulé -> minuit -> écran de fin -> record sauvegardé -> rechargement -> record retrouvé ->
-// son coupé retenu -> ancien format repris -> sauvegarde abîmée mise de côté. Puis une partie au doigt sur iPhone SE.
+// un coup annulé -> minuit -> écran de fin (bilan, vœux, semaine) -> record sauvegardé -> rechargement -> record retrouvé ->
+// son coupé retenu -> archipel (12 îles, une partie, île suivante) -> onglet caché (boucle arrêtée) ->
+// ancien format repris -> sauvegarde abîmée mise de côté. Puis l'archipel et une partie au doigt sur iPhone SE.
 // Lancer : npm run partie
 import { chromium, devices } from 'playwright';
 import { spawn } from 'node:child_process';
@@ -45,7 +46,7 @@ async function play(page, touch) {
 
 const browser = await chromium.launch();
 try {
-  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 800 } })).newPage();
   const errors = [];
   page.on('pageerror', e => errors.push(String(e)));
   page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
@@ -73,8 +74,12 @@ try {
   const score = +(await page.locator('#endScore').innerText());
   check(score >= 40, `écran de fin : ${score} habitants, au moins une étoile`);
   await page.screenshot({ path: `${OUT}/partie-2-fin.png` });
+  check(await page.locator('#endBreak li').count() >= 3, `écran de fin : bilan par bâtiment (${await page.locator('#endBreak li').count()} lignes)`);
+  check(await page.locator('#endWishes li').count() === 3, 'écran de fin : les trois vœux');
+  check(await page.locator('#endWeek span').count() === 7 && await page.locator('#endWeek').isVisible(), 'écran de fin : la semaine de l\'île du jour');
+  check(/\d+ habitant|trois étoiles/i.test(await page.locator('#endNext').innerText()), 'écran de fin : ce qui manque pour l\'étoile suivante');
   let d = await save();
-  check(d?.version === 1 && d.best?.[seed] === score, 'record de l\'île sauvegardé, version 1');
+  check(d?.version === 2 && d.best?.[seed] === score && d.days?.[seed.slice(5)] === score, 'record de l\'île et jour joué sauvegardés, version 2');
 
   await page.click('#again');
   await page.click('#snd');
@@ -85,6 +90,31 @@ try {
   await play(page, false);
   await page.waitForSelector('#end:not(.hide)', { timeout: 6000 });
   check((await page.locator('#endBest').innerText()).includes(String(score)), `après rechargement : record de l'île retrouvé (« ${await page.locator('#endBest').innerText()} »)`);
+
+  // l'archipel : douze îles, deux ouvertes ; une partie en vrais clics sur la première
+  await page.reload();
+  await page.click('#playArchipel');
+  check(await page.locator('#isles .isle').count() === 12, 'archipel : douze îles');
+  check(await page.locator('#isles .isle:not(:disabled)').count() === 2, 'archipel : deux îles ouvertes au départ');
+  await page.screenshot({ path: `${OUT}/partie-4-archipel.png` });
+  await page.click('.isle[data-id=aube]');
+  check(await page.evaluate(() => __kevo.spec.level) === 'aube' && await page.locator('#islandName').innerText() === 'Île de l\'Aube', 'archipel : Île de l\'Aube lancée');
+  const ra = await play(page, false);
+  await page.waitForSelector('#end:not(.hide)', { timeout: 6000 });
+  const sa = +(await page.locator('#endScore').innerText());
+  check(ra.coups === 18 && (await save())?.best?.['archipel-aube'] === sa, `archipel : partie complète, record ${sa} sauvegardé`);
+  check(await page.locator('#next').isVisible() && (await page.locator('#next').innerText()).includes('Le Lagon'), 'archipel : bouton « Île suivante » vers Le Lagon');
+  check(!(await page.locator('#endWeek').isVisible()), 'archipel : pas de semaine de l\'île du jour');
+  await page.screenshot({ path: `${OUT}/partie-5-archipel-fin.png` });
+  await page.click('#next');
+  check(await page.evaluate(() => __kevo.spec.level) === 'lagon' && await page.locator('#end').evaluate(e => e.classList.contains('hide')), 'île suivante lancée');
+  // onglet caché : la boucle d'affichage s'arrête, puis repart
+  check(await page.evaluate(() => __kevo.running), 'boucle d\'affichage en marche');
+  const setHidden = h => page.evaluate(h => { Object.defineProperty(document, 'hidden', { configurable: true, get: () => h }); document.dispatchEvent(new Event('visibilitychange')); }, h);
+  await setHidden(true); await sleep(300);
+  check(!(await page.evaluate(() => __kevo.running)), 'onglet caché : boucle d\'affichage arrêtée');
+  await setHidden(false); await sleep(300);
+  check(await page.evaluate(() => __kevo.running), 'onglet revenu : boucle relancée');
 
   await page.evaluate(s => { localStorage.clear(); localStorage.setItem('kevo-best-' + s, '99'); localStorage.setItem('kevo-mute', '0'); }, seed);
   await page.reload();
@@ -100,7 +130,14 @@ try {
 
   const ctx = await browser.newContext({ ...devices['iPhone SE'] });
   const ph = await ctx.newPage(); const perr = []; ph.on('pageerror', e => perr.push(String(e)));
-  await ph.goto(URL); await ph.tap('#playRandom');
+  await ph.goto(URL);
+  await ph.tap('#playArchipel'); await sleep(700);
+  const fitsW = await ph.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1);
+  const back = await ph.locator('#archiBack').boundingBox();
+  check(fitsW && back && back.y + back.height <= ph.viewportSize().height + 1, 'iPhone SE : archipel sans débordement, « Retour » à l\'écran');
+  await ph.screenshot({ path: `${OUT}/partie-6-iphone-archipel.png` });
+  await ph.tap('#archiBack'); await sleep(700);
+  await ph.tap('#playRandom');
   const m = await play(ph, true);
   await ph.waitForSelector('#end:not(.hide)', { timeout: 6000 }).catch(() => {});
   await ph.screenshot({ path: `${OUT}/partie-3-iphone-se.png` });
