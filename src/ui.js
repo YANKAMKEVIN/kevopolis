@@ -56,5 +56,6 @@ Object.assign(hooks, {
   },
   rerolled() { sfx(0); renderHand(); updateHud(); },
   changed() { renderGoals(); renderHand(); updateHud(); },
-  ended() { renderHand(); setTimeout(() => endHook.show(), 2600); },
+  // si une autre partie est lancée pendant la nuit qui tombe, l'écran de fin de l'ancienne ne s'affiche pas
+  ended() { renderHand(); const r = etat.rev; setTimeout(() => { if (etat.rev === r) endHook.show(); }, 2600); },
 });
