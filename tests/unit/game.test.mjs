@@ -1,13 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { etat, hooks, greedyGame } from './helpers.mjs';
+import { etat, hooks, greedyGame, spec } from './helpers.mjs';
 import { newGame, place, reroll, undo } from '../../src/game.js';
 import { START, END, REROLLS, total, stars } from '../../src/rules.js';
 
 const freeCell = () => etat.G.cells.findIndex(c => c.land && !c.type);
 
 test('nouvelle partie : 6 h, trois cartes, deux nouvelles mains, rien de posé', () => {
-  newGame('jour-2026-11-27', 'Île du 27 novembre');
+  newGame(spec('jour-2026-11-27'));
   assert.equal(etat.hour, START);
   assert.equal(etat.hand.filter(Boolean).length, 3);
   assert.equal(etat.rerolls, REROLLS);
@@ -17,7 +17,7 @@ test('nouvelle partie : 6 h, trois cartes, deux nouvelles mains, rien de posé',
 });
 
 test('poser : la carte quitte la main, une nouvelle arrive du sac, l\'heure avance', () => {
-  newGame('a', 'a');
+  newGame(spec('a'));
   const t = etat.hand[1]; etat.sel = 1; const i = freeCell();
   let seen = null; hooks.placed = (k, d, fresh) => { seen = { k, d, fresh }; };
   place(i);
@@ -30,7 +30,7 @@ test('poser : la carte quitte la main, une nouvelle arrive du sac, l\'heure avan
 });
 
 test('poser est refusé sur la mer, sur un bâtiment ou un bois', () => {
-  newGame('b', 'b');
+  newGame(spec('b'));
   const sea = etat.G.cells.findIndex(c => !c.land), wood = etat.G.cells.findIndex(c => c.type === 'bois');
   place(sea); place(wood);
   assert.equal(etat.hour, START);
@@ -39,7 +39,7 @@ test('poser est refusé sur la mer, sur un bâtiment ou un bois', () => {
 });
 
 test('nouvelle main : coûte une heure, deux fois au plus, les cartes retournent dans le sac', () => {
-  newGame('c', 'c');
+  newGame(spec('c'));
   const bag = etat.G.bag.length;
   reroll(); assert.equal(etat.hour, START + 1); assert.equal(etat.rerolls, REROLLS - 1); assert.equal(etat.G.bag.length, bag);
   reroll(); reroll();
@@ -47,7 +47,7 @@ test('nouvelle main : coûte une heure, deux fois au plus, les cartes retournent
 });
 
 test('annuler défait exactement le dernier coup', () => {
-  newGame('d', 'd');
+  newGame(spec('d'));
   const avant = JSON.stringify({ c: etat.G.cells.map(c => c.type), h: etat.hand, b: etat.G.bag, hour: etat.hour });
   place(freeCell()); reroll();
   undo(); undo();
@@ -56,7 +56,7 @@ test('annuler défait exactement le dernier coup', () => {
 });
 
 test('vœu réalisé : signalé une seule fois', () => {
-  newGame('e', 'e');
+  newGame(spec('e'));
   const fresh = []; hooks.placed = (_i, _d, f) => fresh.push(...f);
   greedyGame('e');
   assert.equal(new Set(fresh).size, fresh.length);

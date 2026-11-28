@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { N, BAG, GOALS, score, total, fullScore, goalsDone, makeIsland, stars, nb, coast, biggest, randomName } from '../../src/rules.js';
+import { N, BAG, GOALS, score, total, fullScore, goalsDone, stars, nb, coast, biggest, randomName } from '../../src/rules.js';
+import { makeIsland } from '../../src/island.js';
 import { island, at } from './helpers.mjs';
 
 test('voisins : seulement les côtés qui se touchent, jamais hors de l\'île', () => {
@@ -91,7 +92,7 @@ test('même graine, même île ; graines différentes, îles différentes', () =
 });
 
 test('étoiles : 40, 54, 66 habitants', () => {
-  assert.deepEqual([39, 40, 53, 54, 65, 66, 90].map(stars), [0, 1, 1, 2, 2, 3, 3]);
+  assert.deepEqual([39, 40, 53, 54, 65, 66, 90].map(s => stars(s)), [0, 1, 1, 2, 2, 3, 3]);
 });
 
 test('nom d\'île au hasard : 5 caractères', () => {
